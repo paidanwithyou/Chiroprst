@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CHIROSMITH — Preset Library</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #080808;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 22px 18px;
+      border-bottom: 1px solid #292929;
+      font-weight: 900;
+      letter-spacing: 4px;
+    }
+    header span { color: #888; }
+    main { max-width: 650px; margin: auto; padding: 20px; }
+    .tagline { color: #aaa; font-size: 13px; }
+    .post {
+      margin-top: 24px;
+      border: 1px solid #303030;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #111;
+    }
+    .preview {
+      aspect-ratio: 9 / 12;
+      background: #191919;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      color: #aaa;
+      gap: 10px;
+    }
+    .play { font-size: 48px; }
+    .details { padding: 17px; }
+    .category {
+      color: #aaa;
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+    h2 { margin-bottom: 8px; }
+    .btn {
+      display: block;
+      margin-top: 16px;
+      padding: 14px;
+      text-align: center;
+      background: white;
+      color: black;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 8px;
+    }
+    footer {
+      padding: 30px;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>CHIRO<span>SMITH</span></header>
+  <main>
+    <h1>PRESET LIBRARY.</h1>
+    <p class="tagline">The Old Style. Reborn.</p>
+    <div id="posts">Memuat postingan...</div>
+  </main>
+  <footer>CHIROSMITH © 2026</footer>
+
+  <script type="module">
+    import { createClient }
+      from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const SUPABASE_URL = 'ISI_PROJECT_URL';
+    const SUPABASE_KEY = 'ISI_PUBLISHABLE_KEY';
+
+    const container = document.querySelector('#posts');
+
+    if (SUPABASE_URL.startsWith('https://') &&
+        SUPABASE_KEY !== 'ISI_PUBLISHABLE_KEY') {
+      const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data, error } = await db
+        .from('posts')
+        .select('id,title,video_url,preset_url,category')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        container.textContent = 'Postingan gagal dimuat.';
+      } else if (!data.length) {
+        container.textContent = 'Belum ada postingan.';
+      } else {
+        container.replaceChildren();
+        data.forEach(post => {
+          const card = document.createElement('article');
+          card.className = 'post';
+
+          const preview = document.createElement('div');
+          preview.className = 'preview';
+          const play = document.createElement('div');
+          play.className = 'play';
+          play.textContent = '▶';
+          const note = document.createElement('div');
+          note.textContent = 'VIDEO PREVIEW';
+          preview.append(play, note);
+
+          const details = document.createElement('div');
+          details.className = 'details';
+          const category = document.createElement('div');
+          category.className = 'category';
+          category.textContent = post.category.toUpperCase();
+          const title = document.createElement('h2');
+          title.textContent = post.title;
+          const link = document.createElement('a');
+          link.className = 'btn';
+          link.textContent = 'PAKAI PROYEK ↗';
+          link.href = post.preset_url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+
+          details.append(category, title, link);
+          card.append(preview, details);
+          container.append(card);
+        });
+      }
+    } else {
+      container.textContent =
+        'Website siap. Hubungkan Supabase untuk memuat postingan.';
+    }
+  </script>
+</body>
+</html>
